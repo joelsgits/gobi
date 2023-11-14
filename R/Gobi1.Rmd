@@ -94,7 +94,30 @@ for (i in 2:nsamples){
 den <- density(lcpm[,i])
 lines(den$x, den$y, col=col[i], lwd=2)
 }
+pca = pcaMethods::pca(t(lcpm), nPcs = 40)
+var_explained <- rbind(pca@R2, pca@R2cum)
+rownames(var_explained) <- c("R2", "Cumulative R2")
+round(var_explained, digits=4)
+ggplot(...,
+aes(x = ..., y = ..., color = as.factor(pd$...))) +
+geom_point(size=2) +
+theme(axis.line = element_line(color = " black"),
+axis.text=element_text(size=12),
+axis.title=element_text(size=14,face="bold"),
+legend.text=element_text(size=12),
+legend.title=element_text(size=14),
+panel.grid.minor=element_blank(),
+panel.grid.major=element_blank(),
+panel.background=element_blank(),
+axis.ticks = element_blank(),
+axis.text.x = element_text(color="#000000", family = "Helvetica",
 
+angle = -45, hjust = 0),
+
+axis.text.y = element_text(color="#000000", family = "Helvetica")) +
+labs(color = "Study group") +
+xlab(paste("PC1", pca@R2[1] * 100, "% of the variance")) +
+ylab(paste("PC2", pca@R2[2] * 100, "% of the variance"))
 ```
 
 ## Including Plots
