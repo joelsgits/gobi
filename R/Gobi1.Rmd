@@ -1,0 +1,108 @@
+---
+title: "Gobi1"
+output: html_document
+date: "2023-11-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r 1}
+library(data.table)
+library(dplyr)
+library(RColorBrewer)
+library(ggplot2)
+library(ggVennDiagram)
+library(pcaMethods)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(SummarizedExperiment)
+count_matrix<-"/Users/User/Documents/Gobi/count_matrix.txt"
+sample_information<- "/Users/User/Documents/Gobi/sample_information.txt"
+sample_information<-read.table(sample_information, header = TRUE, row.names = 1)
+pd <- data.table::fread("/Users/User/Documents/Gobi/sample_information.txt", data.table = FALSE)
+count_matrix <- data.table::fread(count_matrix, data.table = FALSE)
+count_matrix <- count_matrix %>%
+tibble::column_to_rownames(var="GeneID") %>%
+as.matrix()
+d0 <- edgeR::DGEList(counts = count_matrix, group = pd[,2])
+cpm <- edgeR::cpm(d0)
+
+
+# Load the 'utils' package
+library(utils)
+if (!requireNamespace("utils", quietly = TRUE)) {
++     install.packages("utils")
+}
+
+lcpm <- edgeR::cpm(d0, log = TRUE)
+lcpm[1:5,1:5]
+rowSums(d0$counts, na.rm = FALSE)
+rowSums(d0$counts, na.rm = FALSE)== 0
+sum(rowSums(d0$counts, na.rm = FALSE)== 0)
+
+L <- mean(d0$samples$lib.size) * 1e-6
+M <- median(d0$samples$lib.size) * 1e-6
+lcpm.cutoff <- log2(10/M + 2/L)
+nsamples <- ncol(d0)
+col <- brewer.pal(nsamples, "Paired")
+plot(density(lcpm[,1]), col=col[1], lwd=2, ylim=c(0,0.7), las=2, main="", xlab="Log-cpm")
+abline(v=lcpm.cutoff, lty=3)
+for (i in 2:nsamples){
+den <- density(lcpm[,i])
+lines(den$x, den$y, col=col[i], lwd=2)
+}
+keep.exprs <- edgeR::filterByExpr(d0)
+d <- d0[keep.exprs,, keep.lib.sizes=FALSE]
+lcpm <- edgeR::cpm(d, log = TRUE)
+lcpm[1:5,1:5]
+
+L <- mean(d0$samples$lib.size) * 1e-6
+M <- median(d0$samples$lib.size) * 1e-6
+lcpm.cutoff <- log2(10/M + 2/L)
+nsamples <- ncol(d0)
+col <- brewer.pal(nsamples, "Paired")
+plot(density(lcpm[,1]), col=col[1], lwd=2, ylim=c(0,0.7), las=2, main="", xlab="Log-cpm")
+abline(v=lcpm.cutoff, lty=3)
+for (i in 2:nsamples){
+den <- density(lcpm[,i])
+lines(den$x, den$y, col=col[i], lwd=2)
+}
+boxplot(lcpm, las=2, col=col, main="", ylab = "Log-cpm")
+d <- edgeR::calcNormFactors(d, method = "TMM")
+plot(d$samples$norm.factors, ylab = "normalisation factors", xlab = "samples", ylim = c(0,2))
+abline(h=1, col = "red", lty = "dashed", lwd = 5)
+lcpm <- edgeR::cpm(d, log = TRUE)
+lcpm[1:5,1:5]
+boxplot(lcpm, las=2, col=col, main="", ylab = "Log-cpm")
+L <- mean(d0$samples$lib.size) * 1e-6
+M <- median(d0$samples$lib.size) * 1e-6
+lcpm.cutoff <- log2(10/M + 2/L)
+nsamples <- ncol(d0)
+col <- brewer.pal(nsamples, "Paired")
+plot(density(lcpm[,1]), col=col[1], lwd=2, ylim=c(0,0.7), las=2, main="", xlab="Log-cpm")
+abline(v=lcpm.cutoff, lty=3)
+for (i in 2:nsamples){
+den <- density(lcpm[,i])
+lines(den$x, den$y, col=col[i], lwd=2)
+}
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
